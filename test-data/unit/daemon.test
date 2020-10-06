@@ -295,3 +295,23 @@ from foo import foo
 def bar() -> None:
     x = foo('abc')  # type: str
     foo(arg='xyz')
+
+[case testDaemonTwoPartDissonance]
+$ dmypy start --log-file log.txt -- --no-error-summary
+Daemon started
+$ dmypy check main.py
+main.py:1: error: Cannot find implementation or library stub for module named 'aa'
+main.py:1: note: See https://mypy.readthedocs.io/en/latest/running_mypy.html#missing-imports
+== Return code: 1
+$ {python} -c "import shutil; shutil.copy('aa.py.2', 'aa.py'); shutil.copy('bb.py.2', 'bb.py')"
+$ dmypy check main.py  #1
+bb.py:2: error: Unsupported operand types for + ("int" and "str")
+== Return code: 1
+[file main.py]
+import aa
+[file aa.py.2]
+A = 1
+import bb
+[file bb.py.2]
+from  aa import A
+A + ""  # E: Unsupported operand types for + ("int" and "str")

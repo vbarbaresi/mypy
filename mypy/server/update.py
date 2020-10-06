@@ -304,6 +304,8 @@ class FineGrainedBuildManager:
         t0 = time.time()
         next_id, next_path = changed_modules.pop(0)
         if next_id not in self.previous_modules and next_id not in initial_set:
+            # update the module before skipping it, to make sure we're not missing a newly available dependency
+            self.update_module(next_id, next_path, next_id in removed_set)
             self.manager.log_fine_grained('skip %r (module not in import graph)' % next_id)
             return changed_modules, (next_id, next_path), None
         result = self.update_module(next_id, next_path, next_id in removed_set)
